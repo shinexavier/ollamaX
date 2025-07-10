@@ -7,7 +7,7 @@
 DEFAULT_MODEL_BASE="qwen2.5-coder:7b"
 DEFAULT_CTX_SIZE_KB=4
 MODELFILE_PATH="./Modelfile"
-VERSION="1.7.0"
+VERSION="1.7.1"
 CONFIG_DIR="$HOME/.ollamaX"
 CONFIG_FILE="$CONFIG_DIR/config"
 
@@ -36,27 +36,27 @@ load_theme() {
 
     case "$THEME" in
         "solarized")
-            C_PRIMARY='\033[0;35m' # Violet
-            C_ACCENT='\033[0;36m'  # Cyan
-            C_INFO='\033[0;34m'      # Blue
+            C_PRIMARY=$'\033[0;35m' # Violet
+            C_ACCENT=$'\033[0;36m'  # Cyan
+            C_INFO=$'\033[0;34m'      # Blue
             ;;
         "monokai")
-            C_PRIMARY='\033[0;95m' # Pink/Magenta
-            C_ACCENT='\033[0;92m'  # Bright Green
-            C_INFO='\033[0;94m'      # Light Blue
+            C_PRIMARY=$'\033[0;95m' # Pink/Magenta
+            C_ACCENT=$'\033[0;92m'  # Bright Green
+            C_INFO=$'\033[0;94m'      # Light Blue
             ;;
         *) # Default to "Terminal Basic"
-            C_PRIMARY='\033[1;37m' # Bright White
-            C_ACCENT='\033[1;36m'  # Bright Cyan
-            C_INFO='\033[0;34m'      # Blue
+            C_PRIMARY=$'\033[1;37m' # Bright White
+            C_ACCENT=$'\033[1;36m'  # Bright Cyan
+            C_INFO=$'\033[0;34m'      # Blue
             ;;
     esac
 
     # Standard colors that don't change with theme
-    C_OFF='\033[0m'
-    C_SUCCESS='\033[0;32m' # Green
-    C_WARN='\033[0;33m'    # Yellow
-    C_ERROR='\033[0;31m'   # Red
+    C_OFF=$'\033[0m'
+    C_SUCCESS=$'\033[0;32m' # Green
+    C_WARN=$'\033[0;33m'    # Yellow
+    C_ERROR=$'\033[0;31m'   # Red
 }
 
 # Load the theme at the start of the script
@@ -359,11 +359,15 @@ EOF
         fi
 
         echo -e "${C_INFO}${E_START} Starting Ollama server...${C_OFF}"
+        # Always start the server in the background, logging to a file.
+        ollama serve > ollama-server.log 2>&1 &
+
+        # If debug mode is enabled, tail the log file in a new terminal.
         if [ "$DEBUG_MODE" = true ]; then
-            echo -e "${C_WARN}Debug mode enabled. Opening server log in a new terminal...${C_OFF}"
-            osascript -e "tell app \"Terminal\" to do script \"ollama serve\""
-        else
-            ollama serve > ollama-server.log 2>&1 &
+            echo -e "${C_WARN}Debug mode enabled. Tailing server log in a new terminal...${C_OFF}"
+            # Ensure the log file exists before tailing it
+            touch ollama-server.log
+            osascript -e "tell app \"Terminal\" to do script \"tail -f $(pwd)/ollama-server.log\""
         fi
         sleep 2
 

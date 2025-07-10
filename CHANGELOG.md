@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2025-07-10
+
+### Fixed
+
+-   **Debug Mode:** Fixed a bug where debug mode would try to start a second `ollama serve` instance, causing an "address already in use" error. It now correctly tails the log of the existing server process.
+-   **Color Formatting:** Fixed a bug where ANSI color codes were not being interpreted correctly in the interactive wizard's menu prompt.
+
 ## [1.7.0] - 2025-07-10
 
 ### Added
