@@ -5,7 +5,7 @@
 # --- Configuration ---
 # Default values, can be overridden by command-line arguments
 DEFAULT_MODEL_BASE="qwen2.5-coder:7b"
-DEFAULT_CTX_SIZE=4096
+DEFAULT_CTX_SIZE_KB=4
 MODELFILE_PATH="./Modelfile"
 
 # --- Helper Functions ---
@@ -13,11 +13,11 @@ usage() {
     echo "Usage: ollamaX <command> [options]"
     echo
     echo "Commands:"
-    echo "  start [model_base] [ctx_size]   Start the Ollama server with a specific model."
+    echo "  start [model_base] [ctx_size_kb]   Start the Ollama server with a specific model."
     echo "  stop                            Stop the Ollama server."
-    echo "  restart [model_base] [ctx_size] Restart the Ollama server."
+    echo "  restart [model_base] [ctx_size_kb] Restart the Ollama server."
     echo "  list                            List locally available Ollama models."
-    echo "  switch <model_name>             Switch to a different running model."
+    echo "  switch <model_name> [ctx_size_kb]   Switch to a different running model."
     echo "  recommend-ctx <model_base>      Recommend a context size for a model (placeholder)."
     echo
     echo "Example:"
@@ -62,9 +62,9 @@ interactive_wizard() {
                     fi
                 done
 
-                read -p "Enter context size [${DEFAULT_CTX_SIZE}]: " ctx_size
-                ctx_size=${ctx_size:-$DEFAULT_CTX_SIZE}
-                "$0" start "$model_base" "$ctx_size"
+                read -p "Enter context size in KB [${DEFAULT_CTX_SIZE_KB}]: " ctx_size_kb
+                ctx_size_kb=${ctx_size_kb:-$DEFAULT_CTX_SIZE_KB}
+                "$0" start "$model_base" "$ctx_size_kb"
                 break
                 ;;
             "Stop Server")
@@ -73,8 +73,8 @@ interactive_wizard() {
                 ;;
             "Restart Server")
                 read -p "Enter model base (optional): " model_base
-                read -p "Enter context size (optional): " ctx_size
-                "$0" restart "$model_base" "$ctx_size"
+                read -p "Enter context size in KB (optional): " ctx_size_kb
+                "$0" restart "$model_base" "$ctx_size_kb"
                 break
                 ;;
             "List Models")
@@ -101,8 +101,8 @@ interactive_wizard() {
                     fi
                 done
 
-                read -p "Enter context size (optional, press Enter for default): " ctx_size
-                "$0" switch "$model_base" "$ctx_size"
+                read -p "Enter context size in KB (optional, press Enter for default): " ctx_size_kb
+                "$0" switch "$model_base" "$ctx_size_kb"
                 break
                 ;;
             "Recommend Context Size")
@@ -146,13 +146,16 @@ shift # Shift past the command argument
 case "$COMMAND" in
     start)
         MODEL_BASE=${1:-$DEFAULT_MODEL_BASE}
-        CTX_SIZE=${2:-$DEFAULT_CTX_SIZE}
+        CTX_SIZE_KB=${2:-$DEFAULT_CTX_SIZE_KB}
         
+        # Calculate the actual context size
+        CTX_SIZE=$((CTX_SIZE_KB * 1024))
+
         # Sanitize model name for the tag
         SANITIZED_MODEL_BASE=$(echo "$MODEL_BASE" | tr ':' '-')
-        MODEL_NAME="${SANITIZED_MODEL_BASE}-ctx${CTX_SIZE}"
+        MODEL_NAME="${SANITIZED_MODEL_BASE}-ctx${CTX_SIZE_KB}k"
 
-        echo "🔧 Creating Modelfile for $MODEL_NAME"
+        echo "🔧 Creating Modelfile for $MODEL_NAME (Context: $CTX_SIZE)"
         cat <<EOF > "$MODELFILE_PATH"
 FROM $MODEL_BASE
 PARAMETER num_ctx $CTX_SIZE

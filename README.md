@@ -8,7 +8,7 @@ It's designed for developers who want a more streamlined workflow when working w
 
 - **Interactive Wizard**: Run `ollamaX` without any arguments to launch a step-by-step wizard.
 - **Model Management**: Easily start, stop, restart, and switch between your downloaded Ollama models.
-- **Context Size Configuration**: Set a custom context size (`num_ctx`) when starting a model.
+- **Context Size Configuration**: Easily set a custom context size (`num_ctx`) in kilobytes (e.g., 4, 8, 16).
 - **Standard CLI Interface**: Can also be used with standard command-line arguments for scripting and automation.
 - **Simple Installation**: A straightforward installation script to get you up and running quickly.
 
@@ -71,11 +71,11 @@ Please enter your choice:
     Select a model to start:
     ```
     Type the number corresponding to the model you want to use (e.g., `1`) and press Enter.
-3.  **Set the context size**: You will be prompted to enter a context size.
+3.  **Set the context size**: You will be prompted to enter a context size in Kilobytes (KB).
     ```
-    Enter context size [4096]:
+    Enter context size in KB [4]:
     ```
-    You can type a number (e.g., `8192`) and press Enter, or just press Enter to accept the default value shown in the brackets.
+    You can type a number (e.g., `8` for 8192) and press Enter, or just press Enter to accept the default value.
 
 The script will then handle the process of creating the Modelfile, building the custom model, and starting the Ollama server.
 
@@ -87,17 +87,17 @@ For automation and scripting, you can use OllamaX with direct commands and argum
 
 ---
 
-#### `start [model_base] [ctx_size]`
+#### `start [model_base] [ctx_size_kb]`
 
 Starts the Ollama server with a specified model and context size.
 
 -   `model_base` (optional): The base model to use (e.g., `llama3:8b`). Defaults to `qwen2.5-coder:7b` if not provided.
--   `ctx_size` (optional): The context size to set. Defaults to `4096` if not provided.
+-   `ctx_size_kb` (optional): The context size to set, in kilobytes (KB). Defaults to `4` (4096 tokens).
 
 **Example:**
 ```bash
-# Start with a specific model and context
-ollamaX start llama3:8b 8192
+# Start with a specific model and an 8K context
+ollamaX start llama3:8b 8
 
 # Start with the default model and context
 ollamaX start
@@ -116,9 +116,9 @@ ollamaX stop
 
 ---
 
-#### `restart [model_base] [ctx_size]`
+#### `restart [model_base] [ctx_size_kb]`
 
-Restarts the Ollama server. This is equivalent to running `stop` and then `start`. You can optionally provide a new model and context size to change the configuration upon restart.
+Restarts the Ollama server. This is equivalent to running `stop` and then `start`. You can optionally provide a new model and context size (in KB) to change the configuration upon restart.
 
 **Example:**
 ```bash
@@ -142,16 +142,17 @@ ollamaX list
 
 ---
 
-#### `switch <model_base> [ctx_size]`
+#### `switch <model_base> [ctx_size_kb]`
 
 A convenient alias for the `restart` command, making the intent of changing models clearer. It stops the current server and starts a new one with the specified model.
 
 -   `model_base` (required): The new model to switch to.
--   `ctx_size` (optional): The context size for the new model.
+-   `ctx_size_kb` (optional): The context size for the new model, in kilobytes (KB).
 
 **Example:**
 ```bash
-ollamaX switch llama3:latest 16000
+# Switch to llama3 with a 16K context
+ollamaX switch llama3:latest 16
 ```
 
 ## Contributing
