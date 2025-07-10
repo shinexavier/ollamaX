@@ -413,14 +413,23 @@ EOF
         ;;
     update)
         echo -e "${C_BLUE}🔄 Checking for updates...${C_OFF}"
+
+        # Find the script's source directory
+        SOURCE_PATH=$(readlink -f "$0")
+        SOURCE_DIR=$(dirname "$SOURCE_PATH")
+
+        if [ ! -d "$SOURCE_DIR/.git" ]; then
+            echo -e "${C_RED}❌ Could not find the git repository in the source directory: $SOURCE_DIR${C_OFF}"
+            echo -e "${C_YELLOW}Update can only be run if you installed ollamaX by cloning the git repository.${C_OFF}"
+            exit 1
+        fi
+
+        cd "$SOURCE_DIR"
         
-        # Temporarily stash any local changes to avoid conflicts
+        # Temporarily stash any local changes
         git stash > /dev/null 2>&1
         
-        # Fetch the latest changes from the remote
         git fetch origin main
-        
-        # Check the status against the remote branch
         STATUS=$(git status -uno)
         
         if [[ $STATUS == *"Your branch is up to date"* ]]; then
@@ -432,16 +441,23 @@ EOF
         echo -e "${C_YELLOW}⬇️ An update is available. Pulling changes...${C_OFF}"
         git pull origin main
         
-        echo -e "${C_GREEN}✅ Update complete.${C_OFF}"
-        
-        # Check if the installer script itself was updated
-        if [[ $(git diff --name-only HEAD@{1}..HEAD) == *"install.sh"* ]]; then
-            echo -e "${C_YELLOW}⚠️ The installation script has been updated.${C_OFF}"
-            echo -e "Please re-run the installer to apply the changes:"
-            echo -e "${C_CYAN}  chmod +x install.sh && sudo ./install.sh${C_OFF}"
+        echo -e "${C_BLUE}🚀 Re-running installer...${C_OFF}"
+        if [ -f "install.sh" ]; then
+            chmod +x install.sh
+            # Re-launch the installer with sudo to ensure it has the correct permissions
+            sudo ./install.sh
+        else
+            echo -e "${C_RED}❌ install.sh not found in source directory. Cannot complete update.${C_OFF}"
+            git stash pop > /dev/null 2>&1
+            exit 1
         fi
+
+        echo -e "${C_GREEN}✅ Update complete! Restarting ollamaX...${C_OFF}"
         
         # Restore any stashed changes
         git stash pop > /dev/null 2>&1
+        
+        # Relaunch the script with the same arguments it was started with
+        exec "$0" "$@"
         ;;
 esac

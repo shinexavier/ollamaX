@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 -   New `version` command to display the current version of the script.
--   New `update` command to automatically fetch and apply the latest updates from the GitHub repository.
+-   New `update` command to automatically fetch, install, and restart the script for a seamless, one-command update.
 
 ## [1.4.0] - 2025-07-10
 

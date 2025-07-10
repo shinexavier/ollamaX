@@ -16,25 +16,7 @@ if [ ! -f "$SOURCE_SCRIPT" ]; then
     exit 1
 fi
 
-echo "Installing '$INSTALL_NAME' to '$INSTALL_DIR'..."
-
 # Copy the script to the installation directory
 # Use sudo for permissions
-if sudo cp "$SOURCE_SCRIPT" "$INSTALL_DIR/$INSTALL_NAME"; then
-    echo "Script copied to '$INSTALL_DIR/$INSTALL_NAME'."
-else
-    echo "Error: Failed to copy script. Do you have sudo permissions?"
-    exit 1
-fi
-
-# Make the installed script executable
-if sudo chmod +x "$INSTALL_DIR/$INSTALL_NAME"; then
-    echo "Made the script executable."
-else
-    echo "Error: Failed to make script executable."
-    exit 1
-fi
-
-echo
-echo "✅ Installation complete!"
-echo "You can now run '$INSTALL_NAME' from anywhere in your terminal."
+sudo cp "$SOURCE_SCRIPT" "$INSTALL_DIR/$INSTALL_NAME"
+sudo chmod +x "$INSTALL_DIR/$INSTALL_NAME"
