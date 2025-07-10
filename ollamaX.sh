@@ -203,8 +203,11 @@ case "$COMMAND" in
         # Calculate the actual context size
         CTX_SIZE=$((CTX_SIZE_KB * 1024))
 
+        # Strip any existing -ctx...k suffix to avoid duplication
+        CLEAN_MODEL_BASE=$(echo "$MODEL_BASE" | sed -E 's/-ctx[0-9]+k//g')
+
         # Sanitize model name for the tag
-        SANITIZED_MODEL_BASE=$(echo "$MODEL_BASE" | tr ':' '-')
+        SANITIZED_MODEL_BASE=$(echo "$CLEAN_MODEL_BASE" | tr ':' '-')
         MODEL_NAME="${SANITIZED_MODEL_BASE}-ctx${CTX_SIZE_KB}k"
 
         echo
