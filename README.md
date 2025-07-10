@@ -9,6 +9,7 @@ It's designed for developers who want a more streamlined workflow when working w
 - **Interactive Wizard**: Run `ollamaX` without any arguments to launch a step-by-step wizard.
 - **Model Management**: Easily start, stop, restart, and switch between your downloaded Ollama models.
 - **Context Size Configuration**: Easily set a custom context size (`num_ctx`) in kilobytes (e.g., 4, 8, 16).
+- **Theming**: Customize the look and feel of the CLI with the `theme` command.
 - **Standard CLI Interface**: Can also be used with standard command-line arguments for scripting and automation.
 - **Simple Installation**: A straightforward installation script to get you up and running quickly.
 
@@ -201,6 +202,24 @@ Checks for a new version on GitHub and performs a fully automated update if one 
 **Example:**
 ```bash
 ollamaX update
+```
+
+---
+
+#### `theme <theme_name>`
+
+Changes the color scheme of the CLI. Your choice is saved in `~/.ollamaX/config` and will be loaded automatically.
+
+-   `theme_name` (required): The name of the theme to apply.
+
+**Available Themes:**
+-   `basic` (Default: A clean, high-contrast white and cyan theme)
+-   `solarized` (A popular theme with a violet and blue palette)
+-   `monokai` (A classic theme with pink and green accents)
+
+**Example:**
+```bash
+ollamaX theme solarized
 ```
 
 ## Uninstallation
