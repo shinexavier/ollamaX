@@ -7,7 +7,7 @@
 DEFAULT_MODEL_BASE="qwen2.5-coder:7b"
 DEFAULT_CTX_SIZE_KB=4
 MODELFILE_PATH="./Modelfile"
-VERSION="1.5.0"
+VERSION="1.5.1"
 
 # --- Color Definitions ---
 C_OFF='\033[0m'

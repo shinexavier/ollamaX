@@ -155,6 +155,54 @@ A convenient alias for the `restart` command, making the intent of changing mode
 ollamaX switch llama3:latest 16
 ```
 
+---
+
+#### `unload`
+
+Unloads the currently running model from memory without stopping the Ollama server. This is useful for freeing up VRAM.
+
+**Example:**
+```bash
+ollamaX unload
+```
+
+---
+
+#### `clean [configs|all]`
+
+Removes models from your system.
+
+-   `configs`: Removes only the specialized model configurations created by ollamaX (e.g., `llama3:8b-ctx8k`).
+-   `all`: Removes **all** of your locally downloaded Ollama models after a confirmation prompt. Use with caution.
+
+**Example:**
+```bash
+# Clean up only the models created by this tool
+ollamaX clean configs
+```
+
+---
+
+#### `version`
+
+Displays the current version of the `ollamaX` script.
+
+**Example:**
+```bash
+ollamaX version
+```
+
+---
+
+#### `update`
+
+Checks for a new version on GitHub and performs a fully automated update if one is available. It will pull the latest code, re-run the installer, and restart the script.
+
+**Example:**
+```bash
+ollamaX update
+```
+
 ## Uninstallation
 
 To remove OllamaX from your system, run the uninstallation script from within the project directory.
