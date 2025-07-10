@@ -164,14 +164,19 @@ case "$COMMAND" in
         echo "---"
         echo
 
-        echo "🔧 Creating Modelfile..."
-        cat <<EOF > "$MODELFILE_PATH"
+        # Check if the model already exists
+        if ollama list | awk '{print $1}' | grep -q "^${MODEL_NAME}$"; then
+            echo "✅ Model '$MODEL_NAME' already exists. Reusing it."
+        else
+            echo "🔧 Creating Modelfile..."
+            cat <<EOF > "$MODELFILE_PATH"
 FROM $MODEL_BASE
 PARAMETER num_ctx $CTX_SIZE
 EOF
 
-        echo "📦 Building Ollama model..."
-        ollama create "$MODEL_NAME" -f "$MODELFILE_PATH"
+            echo "📦 Building Ollama model..."
+            ollama create "$MODEL_NAME" -f "$MODELFILE_PATH"
+        fi
 
         echo "🚀 Starting Ollama server..."
         ollama serve > ollama-server.log 2>&1 &
