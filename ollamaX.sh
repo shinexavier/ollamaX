@@ -8,11 +8,20 @@ DEFAULT_MODEL_BASE="qwen2.5-coder:7b"
 DEFAULT_CTX_SIZE_KB=4
 MODELFILE_PATH="./Modelfile"
 
+# --- Color Definitions ---
+C_OFF='\033[0m'
+C_RED='\033[0;31m'
+C_GREEN='\033[0;32m'
+C_YELLOW='\033[0;33m'
+C_BLUE='\033[0;34m'
+C_MAGENTA='\033[0;35m'
+C_CYAN='\033[0;36m'
+
 # --- Helper Functions ---
 usage() {
-    echo "Usage: ollamaX <command> [options]"
+    echo -e "${C_CYAN}Usage: ollamaX <command> [options]${C_OFF}"
     echo
-    echo "Commands:"
+    echo -e "${C_CYAN}Commands:${C_OFF}"
     echo "  start [model_base] [ctx_size_kb]   Start the Ollama server with a specific model."
     echo "  stop                            Stop the Ollama server."
     echo "  restart [model_base] [ctx_size_kb] Restart the Ollama server."
@@ -30,7 +39,7 @@ usage() {
 
 # --- Main Logic ---
 interactive_wizard() {
-    echo "Welcome to the OllamaX CLI Wizard!"
+    echo -e "${C_MAGENTA}Welcome to the OllamaX CLI Wizard!${C_OFF}"
     PS3="Please enter your choice: "
     options=(
         "Start Server"
@@ -53,7 +62,7 @@ interactive_wizard() {
                     models+=("$line")
                 done < <(ollama list | awk 'NR>1 {print $1}')
                 if [ ${#models[@]} -eq 0 ]; then
-                    echo "No local models found. Please pull a model first with 'ollama pull <model_name>'."
+                    echo -e "${C_YELLOW}No local models found. Please pull a model first with 'ollama pull <model_name>'.${C_OFF}"
                     break
                 fi
 
@@ -62,7 +71,7 @@ interactive_wizard() {
                     if [[ -n "$model_base" ]]; then
                         break
                     else
-                        echo "Invalid selection."
+                        echo -e "${C_RED}Invalid selection.${C_OFF}"
                     fi
                 done
 
@@ -92,7 +101,7 @@ interactive_wizard() {
                     models+=("$line")
                 done < <(ollama list | awk 'NR>1 {print $1}')
                 if [ ${#models[@]} -eq 0 ]; then
-                    echo "No local models found to switch to."
+                    echo -e "${C_YELLOW}No local models found to switch to.${C_OFF}"
                     break
                 fi
 
@@ -101,7 +110,7 @@ interactive_wizard() {
                      if [[ -n "$model_base" ]]; then
                         break
                     else
-                        echo "Invalid selection."
+                        echo -e "${C_RED}Invalid selection.${C_OFF}"
                     fi
                 done
 
@@ -116,7 +125,7 @@ interactive_wizard() {
                     models+=("$line")
                 done < <(ollama list | awk 'NR>1 {print $1}')
                 if [ ${#models[@]} -eq 0 ]; then
-                    echo "No local models found."
+                    echo -e "${C_YELLOW}No local models found.${C_OFF}"
                     break
                 fi
 
@@ -126,7 +135,7 @@ interactive_wizard() {
                         "$0" recommend-ctx "$model_base"
                         break
                     else
-                        echo "Invalid selection."
+                        echo -e "${C_RED}Invalid selection.${C_OFF}"
                     fi
                 done
                 break
@@ -148,7 +157,7 @@ interactive_wizard() {
                         3)
                             break
                             ;;
-                        *) echo "Invalid option." ;;
+                        *) echo -e "${C_RED}Invalid option.${C_OFF}" ;;
                     esac
                 done
                 break
@@ -160,7 +169,7 @@ interactive_wizard() {
             "Quit")
                 break
                 ;;
-            *) echo "invalid option $REPLY";;
+            *) echo -e "${C_RED}invalid option $REPLY${C_OFF}";;
         esac
     done
 }
@@ -187,32 +196,32 @@ case "$COMMAND" in
 
         echo
         echo "---"
-        echo "Configuration Summary:"
-        echo "  Model to run:   $MODEL_BASE"
-        echo "  Context size:   ${CTX_SIZE_KB}k (${CTX_SIZE} tokens)"
-        echo "  Final model tag:  $MODEL_NAME"
+        echo -e "${C_CYAN}Configuration Summary:${C_OFF}"
+        echo -e "  ${C_BLUE}Model to run:${C_OFF}   $MODEL_BASE"
+        echo -e "  ${C_BLUE}Context size:${C_OFF}   ${CTX_SIZE_KB}k (${CTX_SIZE} tokens)"
+        echo -e "  ${C_BLUE}Final model tag:${C_OFF}  $MODEL_NAME"
         echo "---"
         echo
 
         # Check if the model already exists
         if ollama list | awk '{print $1}' | grep -q "^${MODEL_NAME}$"; then
-            echo "✅ Model '$MODEL_NAME' already exists. Reusing it."
+            echo -e "${C_GREEN}✅ Model '$MODEL_NAME' already exists. Reusing it.${C_OFF}"
         else
-            echo "🔧 Creating Modelfile..."
+            echo -e "${C_BLUE}🔧 Creating Modelfile...${C_OFF}"
             cat <<EOF > "$MODELFILE_PATH"
 FROM $MODEL_BASE
 PARAMETER num_ctx $CTX_SIZE
 EOF
 
-            echo "📦 Building Ollama model..."
+            echo -e "${C_BLUE}📦 Building Ollama model...${C_OFF}"
             ollama create "$MODEL_NAME" -f "$MODELFILE_PATH"
         fi
 
-        echo "🚀 Starting Ollama server..."
+        echo -e "${C_BLUE}🚀 Starting Ollama server...${C_OFF}"
         ollama serve > ollama-server.log 2>&1 &
         sleep 2
 
-        echo "🔥 Warming up model: $MODEL_NAME"
+        echo -e "${C_BLUE}🔥 Warming up model: $MODEL_NAME${C_OFF}"
         # Suppress curl output for cleaner CLI experience
         curl -s http://localhost:11434/api/generate -d "{
           \"model\": \"$MODEL_NAME\",
@@ -220,33 +229,33 @@ EOF
           \"stream\": false
         }" > /dev/null
 
-        echo "✅ Ollama is serving '$MODEL_NAME' at http://localhost:11434"
+        echo -e "${C_GREEN}✅ Ollama is serving '$MODEL_NAME' at http://localhost:11434${C_OFF}"
         ;;
     stop)
-        echo "🛑 Stopping Ollama server..."
+        echo -e "${C_RED}🛑 Stopping Ollama server...${C_OFF}"
         if pgrep -x "ollama" > /dev/null
         then
             pkill -x "ollama"
-            echo "Ollama server stopped."
+            echo -e "${C_GREEN}Ollama server stopped.${C_OFF}"
         else
-            echo "Ollama server is not running."
+            echo -e "${C_YELLOW}Ollama server is not running.${C_OFF}"
         fi
         ;;
     restart)
-        echo "🔄 Restarting Ollama server..."
+        echo -e "${C_BLUE}🔄 Restarting Ollama server...${C_OFF}"
         # Call the stop command from within the script
         "$0" stop
         # Call the start command, passing along any arguments
         "$0" start "$@"
         ;;
     list)
-        echo "📋 Listing locally available Ollama models..."
+        echo -e "${C_BLUE}📋 Listing locally available Ollama models...${C_OFF}"
         
         # Check if server is running
         if ! pgrep -x "ollama" > /dev/null; then
             ollama list
             echo
-            echo "ℹ️ Ollama server is not running. Start it to see the active model."
+            echo -e "${C_YELLOW}ℹ️ Ollama server is not running. Start it to see the active model.${C_OFF}"
             exit 0
         fi
 
@@ -258,7 +267,7 @@ EOF
             # If curl fails, times out, or response is not valid JSON, fall back to simple list
             ollama list
             echo
-            echo "⚠️ Could not determine the running model. The server might be starting up or unresponsive."
+            echo -e "${C_RED}⚠️ Could not determine the running model. The server might be starting up or unresponsive.${C_OFF}"
             exit 0
         fi
 
@@ -273,7 +282,7 @@ EOF
             model_name=$(echo "$line" | awk '{print $1}')
             if [ "$model_name" == "$running_model" ]; then
                 # Append a marker to the running model line
-                echo "$line  (running)"
+                echo -e "${C_GREEN}$line  (running)${C_OFF}"
             else
                 echo "$line"
             fi
@@ -285,31 +294,31 @@ EOF
             echo "Error: Model base must be provided for switch."
             usage
         fi
-        echo "🔄 Switching to model $MODEL_BASE..."
+        echo -e "${C_BLUE}🔄 Switching to model $MODEL_BASE...${C_OFF}"
         # Call the restart command logic
         "$0" restart "$@"
         ;;
     unload)
-        echo "🔌 Unloading current model..."
+        echo -e "${C_BLUE}🔌 Unloading current model...${C_OFF}"
         if ! pgrep -x "ollama" > /dev/null; then
-            echo "ℹ️ Ollama server is not running. Nothing to unload."
+            echo -e "${C_YELLOW}ℹ️ Ollama server is not running. Nothing to unload.${C_OFF}"
             exit 0
         fi
 
         running_model_json=$(curl -s --max-time 2 http://localhost:11434/api/ps)
         if [ -z "$running_model_json" ] || ! echo "$running_model_json" | jq -e . >/dev/null 2>&1; then
-            echo "⚠️ Could not determine the running model. The server might be starting up or unresponsive."
+            echo -e "${C_RED}⚠️ Could not determine the running model. The server might be starting up or unresponsive.${C_OFF}"
             exit 0
         fi
         
         running_model=$(echo "$running_model_json" | jq -r '.models[0].name')
 
         if [ -z "$running_model" ] || [ "$running_model" == "null" ]; then
-            echo "✅ No model is currently loaded."
+            echo -e "${C_GREEN}✅ No model is currently loaded.${C_OFF}"
             exit 0
         fi
 
-        echo "Unloading model: $running_model"
+        echo -e "${C_BLUE}Unloading model: $running_model${C_OFF}"
         # Using the /api/delete endpoint with "keep_alive: -1" is an undocumented
         # way to force a model to be unloaded from memory without deleting it.
         curl -s -X DELETE http://localhost:11434/api/blobs/sha256:1234 -d '{
@@ -325,9 +334,9 @@ EOF
         new_running_model=$(echo "$new_running_model_json" | jq -r '.models[0].name')
 
         if [ "$running_model" != "$new_running_model" ]; then
-            echo "✅ Model '$running_model' has been successfully unloaded."
+            echo -e "${C_GREEN}✅ Model '$running_model' has been successfully unloaded.${C_OFF}"
         else
-            echo "❌ Failed to unload model '$running_model'. It may still be in use."
+            echo -e "${C_RED}❌ Failed to unload model '$running_model'. It may still be in use.${C_OFF}"
         fi
         ;;
     recommend-ctx)
@@ -336,8 +345,8 @@ EOF
             echo "Error: Model base must be provided for recommendation."
             usage
         fi
-        echo "🧠 Recommending context size for $MODEL_BASE..."
-        echo "This feature is a placeholder."
+        echo -e "${C_BLUE}🧠 Recommending context size for $MODEL_BASE...${C_OFF}"
+        echo -e "${C_YELLOW}This feature is a placeholder.${C_OFF}"
         echo "A proper implementation requires hardware detection and model-specific data, which is best done in a more advanced script (e.g., Python)."
         echo "For now, please consult the model's documentation for recommendations."
         ;;
@@ -345,35 +354,35 @@ EOF
         SUB_COMMAND=$1
         case "$SUB_COMMAND" in
             configs)
-                echo "🗑️ Removing all model configurations created by ollamaX..."
+                echo -e "${C_BLUE}🗑️ Removing all model configurations created by ollamaX...${C_OFF}"
                 models_to_remove=$(ollama list | awk 'NR>1 {print $1}' | grep -- '-ctx[0-9]\+k')
                 if [ -z "$models_to_remove" ]; then
-                    echo "No ollamaX model configurations found to remove."
+                    echo -e "${C_YELLOW}No ollamaX model configurations found to remove.${C_OFF}"
                 else
                     echo "$models_to_remove" | while IFS= read -r model; do
                         echo "   - Removing $model"
                         ollama rm "$model"
                     done
-                    echo "✅ Cleanup complete."
+                    echo -e "${C_GREEN}✅ Cleanup complete.${C_OFF}"
                 fi
                 ;;
             all)
-                read -p "⚠️ This will remove ALL Ollama models on your system. Are you sure? [y/N] " -n 1 -r
+                read -p "$(echo -e ${C_RED}⚠️ This will remove ALL Ollama models on your system. Are you sure? [y/N] ${C_OFF})" -n 1 -r
                 echo
                 if [[ $REPLY =~ ^[Yy]$ ]]; then
-                    echo "🗑️ Removing ALL Ollama models..."
+                    echo -e "${C_RED}🗑️ Removing ALL Ollama models...${C_OFF}"
                     models_to_remove=$(ollama list | awk 'NR>1 {print $1}')
                     if [ -z "$models_to_remove" ]; then
-                        echo "No models found to remove."
+                        echo -e "${C_YELLOW}No models found to remove.${C_OFF}"
                     else
                         echo "$models_to_remove" | while IFS= read -r model; do
                             echo "   - Removing $model"
                             ollama rm "$model"
                         done
-                        echo "✅ Cleanup complete."
+                        echo -e "${C_GREEN}✅ Cleanup complete.${C_OFF}"
                     fi
                 else
-                    echo "Cleanup cancelled."
+                    echo -e "${C_YELLOW}Cleanup cancelled.${C_OFF}"
                 fi
                 ;;
             *)
