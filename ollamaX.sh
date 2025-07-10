@@ -404,10 +404,6 @@ EOF
                 ;;
         esac
         ;;
-    *)
-        echo "Error: Unknown command: $COMMAND"
-        usage
-        ;;
     version)
         echo -e "${C_CYAN}ollamaX version ${VERSION}${C_OFF}"
         ;;
@@ -460,5 +456,9 @@ EOF
         
         # Relaunch the script with the same arguments it was started with
         exec "$0" "$@"
+        ;;
+    *)
+        echo "Error: Unknown command: $COMMAND"
+        usage
         ;;
 esac
