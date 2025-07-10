@@ -36,34 +36,123 @@ It's designed for developers who want a more streamlined workflow when working w
 
 ## Usage
 
+OllamaX can be used in two ways: as an interactive wizard or as a standard command-line tool.
+
 ### Interactive Wizard Mode
 
-For the easiest experience, just run the command by itself:
+This is the most user-friendly way to use OllamaX. Simply run the command without any arguments:
 
 ```bash
 ollamaX
 ```
 
-This will launch a menu where you can choose what you want to do. The wizard will guide you through selecting a model and configuring options.
+You will be greeted with a menu of options.
+
+```
+Welcome to the OllamaX CLI Wizard!
+1) Start Server
+2) Stop Server
+3) Restart Server
+4) List Models
+5) Switch Model
+6) Recommend Context Size
+7) Quit
+Please enter your choice:
+```
+
+#### Example: Starting a Server
+
+1.  **Choose an option**: Type `1` and press Enter.
+2.  **Select a model**: The script will list all your locally downloaded Ollama models.
+    ```
+    Available models:
+    1) llama3:8b
+    2) qwen2.5-coder:7b
+    Select a model to start:
+    ```
+    Type the number corresponding to the model you want to use (e.g., `1`) and press Enter.
+3.  **Set the context size**: You will be prompted to enter a context size.
+    ```
+    Enter context size [4096]:
+    ```
+    You can type a number (e.g., `8192`) and press Enter, or just press Enter to accept the default value shown in the brackets.
+
+The script will then handle the process of creating the Modelfile, building the custom model, and starting the Ollama server.
 
 ### Direct Command Mode
 
-You can also use it like a standard CLI tool, which is useful for scripting.
+For automation and scripting, you can use OllamaX with direct commands and arguments.
 
-**Syntax:** `ollamaX <command> [options]`
+**Syntax:** `ollamaX <command> [arguments]`
 
-**Commands:**
+---
 
--   `start [model_base] [ctx_size]`: Start the Ollama server.
-    -   `ollamaX start llama3:8b 8192`
--   `stop`: Stop the Ollama server.
-    -   `ollamaX stop`
--   `restart [model_base] [ctx_size]`: Restart the server with a new configuration.
-    -   `ollamaX restart`
--   `list`: List all your local Ollama models.
-    -   `ollamaX list`
--   `switch <model_base> [ctx_size]`: Stop the current server and start a new one with a different model.
-    -   `ollamaX switch qwen2.5-coder:7b`
+#### `start [model_base] [ctx_size]`
+
+Starts the Ollama server with a specified model and context size.
+
+-   `model_base` (optional): The base model to use (e.g., `llama3:8b`). Defaults to `qwen2.5-coder:7b` if not provided.
+-   `ctx_size` (optional): The context size to set. Defaults to `4096` if not provided.
+
+**Example:**
+```bash
+# Start with a specific model and context
+ollamaX start llama3:8b 8192
+
+# Start with the default model and context
+ollamaX start
+```
+
+---
+
+#### `stop`
+
+Stops any running Ollama server process.
+
+**Example:**
+```bash
+ollamaX stop
+```
+
+---
+
+#### `restart [model_base] [ctx_size]`
+
+Restarts the Ollama server. This is equivalent to running `stop` and then `start`. You can optionally provide a new model and context size to change the configuration upon restart.
+
+**Example:**
+```bash
+# Restart the server with the same configuration
+ollamaX restart
+
+# Restart and switch to a new model
+ollamaX restart codellama:13b
+```
+
+---
+
+#### `list`
+
+Displays a list of all Ollama models that you have downloaded locally. This is a direct pass-through to the `ollama list` command.
+
+**Example:**
+```bash
+ollamaX list
+```
+
+---
+
+#### `switch <model_base> [ctx_size]`
+
+A convenient alias for the `restart` command, making the intent of changing models clearer. It stops the current server and starts a new one with the specified model.
+
+-   `model_base` (required): The new model to switch to.
+-   `ctx_size` (optional): The context size for the new model.
+
+**Example:**
+```bash
+ollamaX switch llama3:latest 16000
+```
 
 ## Contributing
 
