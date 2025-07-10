@@ -155,6 +155,16 @@ A convenient alias for the `restart` command, making the intent of changing mode
 ollamaX switch llama3:latest 16
 ```
 
+## Uninstallation
+
+To remove OllamaX from your system, run the uninstallation script from within the project directory.
+
+This command requires administrator privileges (`sudo`) to remove the executable from `/usr/local/bin`.
+
+```bash
+chmod +x uninstall.sh && sudo ./uninstall.sh
+```
+
 ## Contributing
 
 Contributions are welcome! If you have ideas for new features or improvements, feel free to open an issue or submit a pull request.

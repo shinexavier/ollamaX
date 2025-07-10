@@ -131,7 +131,7 @@ interactive_wizard() {
                 ;;
             "Clean Models")
                 echo "Clean options:"
-                select clean_opt in "Remove ollamaX configs" "Remove ALL models" "Cancel"; do
+                select clean_opt in "Remove ollamaX configs" "Remove ALL models (configs and models)" "Cancel"; do
                     case $clean_opt in
                         "Remove ollamaX configs")
                             "$0" clean configs
