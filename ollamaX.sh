@@ -310,13 +310,25 @@ EOF
         fi
 
         echo "Unloading model: $running_model"
-        curl -s http://localhost:11434/api/generate -d '{
-          "model": "",
-          "prompt": "",
-          "stream": false
+        # Using the /api/delete endpoint with "keep_alive: -1" is an undocumented
+        # way to force a model to be unloaded from memory without deleting it.
+        curl -s -X DELETE http://localhost:11434/api/blobs/sha256:1234 -d '{
+          "name": "'"$running_model"'",
+          "keep_alive": -1
         }' > /dev/null
 
-        echo "✅ Model unloaded."
+        # It can take a moment for the model to fully unload
+        sleep 1
+
+        # Verify that the model is no longer running
+        new_running_model_json=$(curl -s --max-time 2 http://localhost:11434/api/ps)
+        new_running_model=$(echo "$new_running_model_json" | jq -r '.models[0].name')
+
+        if [ "$running_model" != "$new_running_model" ]; then
+            echo "✅ Model '$running_model' has been successfully unloaded."
+        else
+            echo "❌ Failed to unload model '$running_model'. It may still be in use."
+        fi
         ;;
     recommend-ctx)
         MODEL_BASE=$1

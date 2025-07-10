@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 -   The `list` command now indicates the currently running model with a `(running)` marker.
--   New `unload` command to remove the currently loaded model from memory without stopping the server.
+-   New `unload` command to remove the currently loaded model from memory without stopping the server. This now uses a more reliable method and verifies that the model was unloaded.
 
 ### Fixed
 
