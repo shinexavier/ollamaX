@@ -445,7 +445,8 @@ EOF
         if [ -f "install.sh" ]; then
             chmod +x install.sh
             # Re-launch the installer with sudo to ensure it has the correct permissions
-            sudo ./install.sh
+            # Re-launch the installer with sudo and the --silent flag
+            sudo ./install.sh --silent
         else
             echo -e "${C_RED}❌ install.sh not found in source directory. Cannot complete update.${C_OFF}"
             git stash pop > /dev/null 2>&1
