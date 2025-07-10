@@ -131,17 +131,19 @@ interactive_wizard() {
                 ;;
             "Clean Models")
                 echo "Clean options:"
-                select clean_opt in "Remove ollamaX configs" "Remove ALL models (configs and models)" "Cancel"; do
-                    case $clean_opt in
-                        "Remove ollamaX configs")
+                PS3="Please enter your choice: "
+                clean_options=("Remove ollamaX configs" "Remove ALL models (configs and models)" "Cancel")
+                select clean_opt in "${clean_options[@]}"; do
+                    case $REPLY in
+                        1)
                             "$0" clean configs
                             break
                             ;;
-                        "Remove ALL models")
+                        2)
                             "$0" clean all
                             break
                             ;;
-                        "Cancel")
+                        3)
                             break
                             ;;
                         *) echo "Invalid option." ;;
