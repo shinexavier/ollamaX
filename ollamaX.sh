@@ -7,7 +7,7 @@
 DEFAULT_MODEL_BASE="qwen2.5-coder:7b"
 DEFAULT_CTX_SIZE_KB=4
 MODELFILE_PATH="./Modelfile"
-VERSION="1.6.0"
+VERSION="1.7.0"
 CONFIG_DIR="$HOME/.ollamaX"
 CONFIG_FILE="$CONFIG_DIR/config"
 
@@ -67,7 +67,7 @@ usage() {
     echo -e "${C_PRIMARY}Usage: ollamaX <command> [options]${C_OFF}"
     echo
     echo -e "${C_PRIMARY}Commands:${C_OFF}"
-    echo "  start [model_base] [ctx_size_kb]   Start the Ollama server with a specific model."
+    echo "  start [model_base] [ctx_size_kb] [--debug]  Start the Ollama server with a specific model."
     echo "  stop                            Stop the Ollama server."
     echo "  restart [model_base] [ctx_size_kb] Restart the Ollama server."
     echo "  list                            List locally available Ollama models."
@@ -91,6 +91,7 @@ interactive_wizard() {
     PS3="${C_ACCENT}Please enter your choice: ${C_OFF}"
     options=(
         "Start Server"
+        "Start Server (Debug Mode)"
         "Stop Server"
         "Restart Server"
         "List Models"
@@ -134,6 +135,37 @@ interactive_wizard() {
                     read -p "${C_ACCENT}Enter context size in KB [${DEFAULT_CTX_SIZE_KB}]: ${C_OFF}" ctx_size_kb
                     ctx_size_kb=${ctx_size_kb:-$DEFAULT_CTX_SIZE_KB}
                     "$0" start "$model_base" "$ctx_size_kb"
+                fi
+                break
+                ;;
+            "Start Server (Debug Mode)")
+                echo "Available models:"
+                models=()
+                while IFS= read -r line; do
+                    models+=("$line")
+                done < <(ollama list | awk 'NR>1 {print $1}')
+                if [ ${#models[@]} -eq 0 ]; then
+                    echo -e "${C_WARN}${E_WARN} No local models found. Please pull a model first with 'ollama pull <model_name>'.${C_OFF}"
+                    break
+                fi
+
+                PS3="Select a model to start: "
+                select model_base in "${models[@]}"; do
+                    if [[ -n "$model_base" ]]; then
+                        break
+                    else
+                        echo -e "${C_ERROR}Invalid selection.${C_OFF}"
+                    fi
+                done
+
+                # If the selected model already has a context size, just use it.
+                if [[ $model_base == *"-ctx"* ]]; then
+                    "$0" start "$model_base" --debug
+                else
+                    # Otherwise, ask for the context size.
+                    read -p "${C_ACCENT}Enter context size in KB [${DEFAULT_CTX_SIZE_KB}]: ${C_OFF}" ctx_size_kb
+                    ctx_size_kb=${ctx_size_kb:-$DEFAULT_CTX_SIZE_KB}
+                    "$0" start "$model_base" "$ctx_size_kb" --debug
                 fi
                 break
                 ;;
@@ -261,8 +293,32 @@ shift # Shift past the command argument
 
 case "$COMMAND" in
     start)
-        MODEL_BASE=${1:-$DEFAULT_MODEL_BASE}
-        CTX_SIZE_KB=$2
+        # Parse arguments, allowing for --debug flag
+        MODEL_BASE=""
+        CTX_SIZE_KB=""
+        DEBUG_MODE=false
+        for arg in "$@"; do
+            case $arg in
+                --debug)
+                DEBUG_MODE=true
+                shift
+                ;;
+                *)
+                if [ -z "$MODEL_BASE" ]; then
+                    MODEL_BASE=$arg
+                elif [ -z "$CTX_SIZE_KB" ]; then
+                    CTX_SIZE_KB=$arg
+                fi
+                ;;
+            esac
+        done
+
+        # Set defaults if not provided
+        MODEL_BASE=${MODEL_BASE:-$DEFAULT_MODEL_BASE}
+        if [[ $MODEL_BASE != *"-ctx"* ]] && [ -z "$CTX_SIZE_KB" ]; then
+             CTX_SIZE_KB=${DEFAULT_CTX_SIZE_KB}
+        fi
+
 
         # If a context size is provided, create a new model config.
         if [ -n "$CTX_SIZE_KB" ]; then
@@ -303,7 +359,12 @@ EOF
         fi
 
         echo -e "${C_INFO}${E_START} Starting Ollama server...${C_OFF}"
-        ollama serve > ollama-server.log 2>&1 &
+        if [ "$DEBUG_MODE" = true ]; then
+            echo -e "${C_WARN}Debug mode enabled. Opening server log in a new terminal...${C_OFF}"
+            osascript -e "tell app \"Terminal\" to do script \"ollama serve\""
+        else
+            ollama serve > ollama-server.log 2>&1 &
+        fi
         sleep 2
 
         echo -e "${C_INFO}🔥 Warming up model: $MODEL_NAME${C_OFF}"

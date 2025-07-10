@@ -88,12 +88,13 @@ For automation and scripting, you can use OllamaX with direct commands and argum
 
 ---
 
-#### `start [model_base] [ctx_size_kb]`
+#### `start [model_base] [ctx_size_kb] [--debug]`
 
 Starts the Ollama server with a specified model and context size.
 
 -   `model_base` (optional): The base model to use (e.g., `llama3:8b`). Defaults to `qwen2.5-coder:7b` if not provided.
 -   `ctx_size_kb` (optional): The context size to set, in kilobytes (KB). Defaults to `4` (4096 tokens).
+-   `--debug` (optional): If included, the Ollama server log will be opened in a new terminal window for live monitoring.
 
 **Example:**
 ```bash
@@ -102,6 +103,9 @@ ollamaX start llama3:8b 8
 
 # Start with the default model and context
 ollamaX start
+
+# Start in debug mode to see the live server log
+ollamaX start llama3:8b --debug
 ```
 
 ---
