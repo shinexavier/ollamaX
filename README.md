@@ -21,11 +21,10 @@ It's designed for developers who want a more streamlined workflow when working w
     ```
 
 2.  **Run the installation script:**
-    This will copy the `ollamaX` command to `/usr/local/bin` and make it executable. You will be prompted for your password as it requires `sudo`.
+    This command will first make the script executable and then run it. You will be prompted for your password because the script needs administrator privileges (`sudo`) to place the `ollamaX` command in `/usr/local/bin`.
 
     ```bash
-    chmod +x install.sh
-    ./install.sh
+    chmod +x install.sh && sudo ./install.sh
     ```
 
 3.  **Start using OllamaX!**
