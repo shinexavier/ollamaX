@@ -80,9 +80,21 @@ interactive_wizard() {
                     fi
                 done
 
-                read -p "Enter context size in KB [${DEFAULT_CTX_SIZE_KB}]: " ctx_size_kb
-                ctx_size_kb=${ctx_size_kb:-$DEFAULT_CTX_SIZE_KB}
-                "$0" start "$model_base" "$ctx_size_kb"
+                # If the selected model already has a context size, just use it.
+                if [[ $model_base == *"-ctx"* ]]; then
+                    "$0" start "$model_base"
+                else
+                    # Otherwise, ask for the context size.
+                    # If the selected model already has a context size, just use it.
+                    if [[ $model_base == *"-ctx"* ]]; then
+                        "$0" start "$model_base"
+                    else
+                        # Otherwise, ask for the context size.
+                        read -p "Enter context size in KB [${DEFAULT_CTX_SIZE_KB}]: " ctx_size_kb
+                        ctx_size_kb=${ctx_size_kb:-$DEFAULT_CTX_SIZE_KB}
+                        "$0" start "$model_base" "$ctx_size_kb"
+                    fi
+                fi
                 break
                 ;;
             "Stop Server")
@@ -119,8 +131,20 @@ interactive_wizard() {
                     fi
                 done
 
-                read -p "Enter context size in KB (optional, press Enter for default): " ctx_size_kb
-                "$0" switch "$model_base" "$ctx_size_kb"
+                # If the selected model already has a context size, just use it.
+                if [[ $model_base == *"-ctx"* ]]; then
+                    "$0" switch "$model_base"
+                else
+                    # Otherwise, ask for the context size.
+                    # If the selected model already has a context size, just use it.
+                    if [[ $model_base == *"-ctx"* ]]; then
+                        "$0" switch "$model_base"
+                    else
+                        # Otherwise, ask for the context size.
+                        read -p "Enter context size in KB (optional, press Enter for default): " ctx_size_kb
+                        "$0" switch "$model_base" "$ctx_size_kb"
+                    fi
+                fi
                 break
                 ;;
             "Recommend Context Size")
@@ -198,24 +222,29 @@ shift # Shift past the command argument
 case "$COMMAND" in
     start)
         MODEL_BASE=${1:-$DEFAULT_MODEL_BASE}
-        CTX_SIZE_KB=${2:-$DEFAULT_CTX_SIZE_KB}
-        
-        # Calculate the actual context size
-        CTX_SIZE=$((CTX_SIZE_KB * 1024))
+        CTX_SIZE_KB=$2
 
-        # Strip any existing -ctx...k suffix to avoid duplication
-        CLEAN_MODEL_BASE=$(echo "$MODEL_BASE" | sed -E 's/-ctx[0-9]+k//g')
-
-        # Sanitize model name for the tag
-        SANITIZED_MODEL_BASE=$(echo "$CLEAN_MODEL_BASE" | tr ':' '-')
-        MODEL_NAME="${SANITIZED_MODEL_BASE}-ctx${CTX_SIZE_KB}k"
+        # If a context size is provided, create a new model config.
+        if [ -n "$CTX_SIZE_KB" ]; then
+            CTX_SIZE=$((CTX_SIZE_KB * 1024))
+            # Strip any existing -ctx...k suffix to avoid duplication
+            CLEAN_MODEL_BASE=$(echo "$MODEL_BASE" | sed -E 's/-ctx[0-9]+k//g')
+            # Sanitize model name for the tag
+            SANITIZED_MODEL_BASE=$(echo "$CLEAN_MODEL_BASE" | tr ':' '-')
+            MODEL_NAME="${SANITIZED_MODEL_BASE}-ctx${CTX_SIZE_KB}k"
+        else
+            # If no context size is provided, use the model name as is.
+            MODEL_NAME=$MODEL_BASE
+        fi
 
         echo
         echo "---"
         echo -e "${C_CYAN}Configuration Summary:${C_OFF}"
-        echo -e "  ${C_BLUE}Model to run:${C_OFF}   $MODEL_BASE"
-        echo -e "  ${C_BLUE}Context size:${C_OFF}   ${CTX_SIZE_KB}k (${CTX_SIZE} tokens)"
         echo -e "  ${C_BLUE}Final model tag:${C_OFF}  $MODEL_NAME"
+        if [ -n "$CTX_SIZE_KB" ]; then
+             echo -e "  ${C_BLUE}From base model:${C_OFF} $MODEL_BASE"
+             echo -e "  ${C_BLUE}With context size:${C_OFF}   ${CTX_SIZE_KB}k (${CTX_SIZE} tokens)"
+        fi
         echo "---"
         echo
 
