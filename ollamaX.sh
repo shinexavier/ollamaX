@@ -7,6 +7,7 @@
 DEFAULT_MODEL_BASE="qwen2.5-coder:7b"
 DEFAULT_CTX_SIZE_KB=4
 MODELFILE_PATH="./Modelfile"
+VERSION="1.5.0"
 
 # --- Color Definitions ---
 C_OFF='\033[0m'
@@ -30,6 +31,8 @@ usage() {
     echo "  unload                          Unload the current model from memory."
     echo "  clean [configs|all]             Remove models. 'configs' removes only ollamaX models, 'all' removes all models."
     echo "  recommend-ctx <model_base>      Recommend a context size for a model (placeholder)."
+    echo "  version                         Show the current version of ollamaX."
+    echo "  update                          Update ollamaX to the latest version from GitHub."
     echo
     echo "Example:"
     echo "  ollamaX start llama3:8b 8192"
@@ -50,6 +53,8 @@ interactive_wizard() {
         "Recommend Context Size"
         "Clean Models"
         "Unload Current Model"
+        "View Version"
+        "Update ollamaX"
         "Quit"
     )
     select opt in "${options[@]}"
@@ -164,6 +169,14 @@ interactive_wizard() {
                 ;;
             "Unload Current Model")
                 "$0" unload
+                break
+                ;;
+            "View Version")
+                "$0" version
+                break
+                ;;
+            "Update ollamaX")
+                "$0" update
                 break
                 ;;
             "Quit")
@@ -394,5 +407,41 @@ EOF
     *)
         echo "Error: Unknown command: $COMMAND"
         usage
+        ;;
+    version)
+        echo -e "${C_CYAN}ollamaX version ${VERSION}${C_OFF}"
+        ;;
+    update)
+        echo -e "${C_BLUE}🔄 Checking for updates...${C_OFF}"
+        
+        # Temporarily stash any local changes to avoid conflicts
+        git stash > /dev/null 2>&1
+        
+        # Fetch the latest changes from the remote
+        git fetch origin main
+        
+        # Check the status against the remote branch
+        STATUS=$(git status -uno)
+        
+        if [[ $STATUS == *"Your branch is up to date"* ]]; then
+            echo -e "${C_GREEN}✅ You are already running the latest version of ollamaX.${C_OFF}"
+            git stash pop > /dev/null 2>&1
+            exit 0
+        fi
+        
+        echo -e "${C_YELLOW}⬇️ An update is available. Pulling changes...${C_OFF}"
+        git pull origin main
+        
+        echo -e "${C_GREEN}✅ Update complete.${C_OFF}"
+        
+        # Check if the installer script itself was updated
+        if [[ $(git diff --name-only HEAD@{1}..HEAD) == *"install.sh"* ]]; then
+            echo -e "${C_YELLOW}⚠️ The installation script has been updated.${C_OFF}"
+            echo -e "Please re-run the installer to apply the changes:"
+            echo -e "${C_CYAN}  chmod +x install.sh && sudo ./install.sh${C_OFF}"
+        fi
+        
+        # Restore any stashed changes
+        git stash pop > /dev/null 2>&1
         ;;
 esac
