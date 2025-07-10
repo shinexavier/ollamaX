@@ -155,16 +155,25 @@ case "$COMMAND" in
         SANITIZED_MODEL_BASE=$(echo "$MODEL_BASE" | tr ':' '-')
         MODEL_NAME="${SANITIZED_MODEL_BASE}-ctx${CTX_SIZE_KB}k"
 
-        echo "🔧 Creating Modelfile for $MODEL_NAME (Context: $CTX_SIZE)"
+        echo
+        echo "---"
+        echo "Configuration Summary:"
+        echo "  Model to run:   $MODEL_BASE"
+        echo "  Context size:   ${CTX_SIZE_KB}k (${CTX_SIZE} tokens)"
+        echo "  Final model tag:  $MODEL_NAME"
+        echo "---"
+        echo
+
+        echo "🔧 Creating Modelfile..."
         cat <<EOF > "$MODELFILE_PATH"
 FROM $MODEL_BASE
 PARAMETER num_ctx $CTX_SIZE
 EOF
 
-        echo "📦 Building Ollama model: $MODEL_NAME"
+        echo "📦 Building Ollama model..."
         ollama create "$MODEL_NAME" -f "$MODELFILE_PATH"
 
-        echo "🚀 Starting Ollama server in background..."
+        echo "🚀 Starting Ollama server..."
         ollama serve > ollama-server.log 2>&1 &
         sleep 2
 
