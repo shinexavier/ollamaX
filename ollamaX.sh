@@ -18,6 +18,7 @@ usage() {
     echo "  restart [model_base] [ctx_size_kb] Restart the Ollama server."
     echo "  list                            List locally available Ollama models."
     echo "  switch <model_name> [ctx_size_kb]   Switch to a different running model."
+    echo "  unload                          Unload the current model from memory."
     echo "  clean [configs|all]             Remove models. 'configs' removes only ollamaX models, 'all' removes all models."
     echo "  recommend-ctx <model_base>      Recommend a context size for a model (placeholder)."
     echo
@@ -39,6 +40,7 @@ interactive_wizard() {
         "Switch Model"
         "Recommend Context Size"
         "Clean Models"
+        "Unload Current Model"
         "Quit"
     )
     select opt in "${options[@]}"
@@ -151,6 +153,10 @@ interactive_wizard() {
                 done
                 break
                 ;;
+            "Unload Current Model")
+                "$0" unload
+                break
+                ;;
             "Quit")
                 break
                 ;;
@@ -235,7 +241,43 @@ EOF
         ;;
     list)
         echo "📋 Listing locally available Ollama models..."
-        ollama list
+        
+        # Check if server is running
+        if ! pgrep -x "ollama" > /dev/null; then
+            ollama list
+            echo
+            echo "ℹ️ Ollama server is not running. Start it to see the active model."
+            exit 0
+        fi
+
+        # Try to get the running model
+        # Use a timeout to prevent long waits if the server is unresponsive
+        running_model_json=$(curl -s --max-time 2 http://localhost:11434/api/ps)
+        
+        if [ -z "$running_model_json" ] || ! echo "$running_model_json" | jq -e . >/dev/null 2>&1; then
+            # If curl fails, times out, or response is not valid JSON, fall back to simple list
+            ollama list
+            echo
+            echo "⚠️ Could not determine the running model. The server might be starting up or unresponsive."
+            exit 0
+        fi
+
+        running_model=$(echo "$running_model_json" | jq -r '.models[0].name')
+
+        # Get the header from ollama list
+        header=$(ollama list | head -n 1)
+        echo "$header"
+
+        # Process the rest of the list
+        ollama list | tail -n +2 | while IFS= read -r line; do
+            model_name=$(echo "$line" | awk '{print $1}')
+            if [ "$model_name" == "$running_model" ]; then
+                # Append a marker to the running model line
+                echo "$line  (running)"
+            else
+                echo "$line"
+            fi
+        done
         ;;
     switch)
         MODEL_BASE=$1
@@ -246,6 +288,35 @@ EOF
         echo "🔄 Switching to model $MODEL_BASE..."
         # Call the restart command logic
         "$0" restart "$@"
+        ;;
+    unload)
+        echo "🔌 Unloading current model..."
+        if ! pgrep -x "ollama" > /dev/null; then
+            echo "ℹ️ Ollama server is not running. Nothing to unload."
+            exit 0
+        fi
+
+        running_model_json=$(curl -s --max-time 2 http://localhost:11434/api/ps)
+        if [ -z "$running_model_json" ] || ! echo "$running_model_json" | jq -e . >/dev/null 2>&1; then
+            echo "⚠️ Could not determine the running model. The server might be starting up or unresponsive."
+            exit 0
+        fi
+        
+        running_model=$(echo "$running_model_json" | jq -r '.models[0].name')
+
+        if [ -z "$running_model" ] || [ "$running_model" == "null" ]; then
+            echo "✅ No model is currently loaded."
+            exit 0
+        fi
+
+        echo "Unloading model: $running_model"
+        curl -s http://localhost:11434/api/generate -d '{
+          "model": "",
+          "prompt": "",
+          "stream": false
+        }' > /dev/null
+
+        echo "✅ Model unloaded."
         ;;
     recommend-ctx)
         MODEL_BASE=$1
@@ -263,7 +334,7 @@ EOF
         case "$SUB_COMMAND" in
             configs)
                 echo "🗑️ Removing all model configurations created by ollamaX..."
-                models_to_remove=$(ollama list | awk 'NR>1 {print $1}' | grep -- '-ctx[0-9]\+k$')
+                models_to_remove=$(ollama list | awk 'NR>1 {print $1}' | grep -- '-ctx[0-9]\+k')
                 if [ -z "$models_to_remove" ]; then
                     echo "No ollamaX model configurations found to remove."
                 else

@@ -5,21 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.2] - 2025-07-10
-
-### Fixed
-
--   Fixed a bug in the interactive wizard where the "Clean Models" menu was not correctly processing user input.
-
-## [1.2.1] - 2025-07-10
+## [1.3.0] - 2025-07-10
 
 ### Added
 
--   `uninstall.sh` script to remove the `ollamaX` executable from `/usr/local/bin`.
+-   The `list` command now indicates the currently running model with a `(running)` marker.
+-   New `unload` command to remove the currently loaded model from memory without stopping the server.
 
-### Changed
+### Fixed
 
--   Clarified the "Clean Models" option in the interactive wizard to read "Remove ALL models (configs and models)" for better user understanding.
+-   Fixed a bug in the `clean configs` command where it failed to identify models with tags (e.g., `:latest`) appended after the context size.
+-   Fixed a bug in the interactive wizard where the "Clean Models" menu was not correctly processing user input.
 
 ## [1.2.0] - 2025-07-10
 
