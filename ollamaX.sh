@@ -18,6 +18,7 @@ usage() {
     echo "  restart [model_base] [ctx_size_kb] Restart the Ollama server."
     echo "  list                            List locally available Ollama models."
     echo "  switch <model_name> [ctx_size_kb]   Switch to a different running model."
+    echo "  clean [configs|all]             Remove models. 'configs' removes only ollamaX models, 'all' removes all models."
     echo "  recommend-ctx <model_base>      Recommend a context size for a model (placeholder)."
     echo
     echo "Example:"
@@ -37,6 +38,7 @@ interactive_wizard() {
         "List Models"
         "Switch Model"
         "Recommend Context Size"
+        "Clean Models"
         "Quit"
     )
     select opt in "${options[@]}"
@@ -124,6 +126,26 @@ interactive_wizard() {
                     else
                         echo "Invalid selection."
                     fi
+                done
+                break
+                ;;
+            "Clean Models")
+                echo "Clean options:"
+                select clean_opt in "Remove ollamaX configs" "Remove ALL models" "Cancel"; do
+                    case $clean_opt in
+                        "Remove ollamaX configs")
+                            "$0" clean configs
+                            break
+                            ;;
+                        "Remove ALL models")
+                            "$0" clean all
+                            break
+                            ;;
+                        "Cancel")
+                            break
+                            ;;
+                        *) echo "Invalid option." ;;
+                    esac
                 done
                 break
                 ;;
@@ -233,6 +255,47 @@ EOF
         echo "This feature is a placeholder."
         echo "A proper implementation requires hardware detection and model-specific data, which is best done in a more advanced script (e.g., Python)."
         echo "For now, please consult the model's documentation for recommendations."
+        ;;
+    clean)
+        SUB_COMMAND=$1
+        case "$SUB_COMMAND" in
+            configs)
+                echo "🗑️ Removing all model configurations created by ollamaX..."
+                models_to_remove=$(ollama list | awk 'NR>1 {print $1}' | grep -- '-ctx[0-9]\+k$')
+                if [ -z "$models_to_remove" ]; then
+                    echo "No ollamaX model configurations found to remove."
+                else
+                    echo "$models_to_remove" | while IFS= read -r model; do
+                        echo "   - Removing $model"
+                        ollama rm "$model"
+                    done
+                    echo "✅ Cleanup complete."
+                fi
+                ;;
+            all)
+                read -p "⚠️ This will remove ALL Ollama models on your system. Are you sure? [y/N] " -n 1 -r
+                echo
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    echo "🗑️ Removing ALL Ollama models..."
+                    models_to_remove=$(ollama list | awk 'NR>1 {print $1}')
+                    if [ -z "$models_to_remove" ]; then
+                        echo "No models found to remove."
+                    else
+                        echo "$models_to_remove" | while IFS= read -r model; do
+                            echo "   - Removing $model"
+                            ollama rm "$model"
+                        done
+                        echo "✅ Cleanup complete."
+                    fi
+                else
+                    echo "Cleanup cancelled."
+                fi
+                ;;
+            *)
+                echo "Error: Invalid clean command. Use 'configs' or 'all'."
+                usage
+                ;;
+        esac
         ;;
     *)
         echo "Error: Unknown command: $COMMAND"
