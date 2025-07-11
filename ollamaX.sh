@@ -7,7 +7,7 @@
 DEFAULT_MODEL_BASE="qwen2.5-coder:7b"
 DEFAULT_CTX_SIZE_KB=4
 MODELFILE_PATH="./Modelfile"
-VERSION="1.7.4"
+VERSION="1.7.5"
 CONFIG_DIR="$HOME/.ollamaX"
 CONFIG_FILE="$CONFIG_DIR/config"
 
@@ -48,7 +48,7 @@ load_theme() {
         *) # Default to "Terminal Basic"
             C_PRIMARY=$'\033[1;37m' # Bright White
             C_ACCENT=$'\033[1;36m'  # Bright Cyan
-            C_INFO=$'\033[0;34m'      # Blue
+            C_INFO=$'\033[1;37m'      # Bright White (same as primary)
             ;;
     esac
 
