@@ -7,7 +7,7 @@
 DEFAULT_MODEL_BASE="qwen2.5-coder:7b"
 DEFAULT_CTX_SIZE_KB=4
 MODELFILE_PATH="./Modelfile"
-VERSION="1.7.1"
+VERSION="1.7.2"
 CONFIG_DIR="$HOME/.ollamaX"
 CONFIG_FILE="$CONFIG_DIR/config"
 
@@ -363,11 +363,13 @@ EOF
         ollama serve > ollama-server.log 2>&1 &
 
         # If debug mode is enabled, tail the log file in a new terminal.
+        # If debug mode is enabled, tail the log file in the background of the current terminal.
         if [ "$DEBUG_MODE" = true ]; then
-            echo -e "${C_WARN}Debug mode enabled. Tailing server log in a new terminal...${C_OFF}"
-            # Ensure the log file exists before tailing it
+            echo -e "${C_WARN}Debug mode enabled. Tailing server log in this terminal...${C_OFF}"
+            echo -e "${C_INFO}Press Ctrl+C to stop viewing the log (this will not stop the server).${C_OFF}"
+            # Ensure the log file exists before tailing it, then tail in the background.
             touch ollama-server.log
-            osascript -e "tell app \"Terminal\" to do script \"tail -f $(pwd)/ollama-server.log\""
+            tail -f ollama-server.log &
         fi
         sleep 2
 
