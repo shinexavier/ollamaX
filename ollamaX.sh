@@ -377,7 +377,6 @@ EOF
             touch ollama-server.log
             tail -f ollama-server.log &
         fi
-        sleep 2
 
         echo -e "${C_INFO}🔥 Warming up model: $MODEL_NAME${C_OFF}"
         # Suppress curl output for cleaner CLI experience
