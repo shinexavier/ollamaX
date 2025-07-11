@@ -7,7 +7,7 @@
 DEFAULT_MODEL_BASE="qwen2.5-coder:7b"
 DEFAULT_CTX_SIZE_KB=4
 MODELFILE_PATH="./Modelfile"
-VERSION="1.7.3"
+VERSION="1.7.4"
 CONFIG_DIR="$HOME/.ollamaX"
 CONFIG_FILE="$CONFIG_DIR/config"
 
@@ -390,9 +390,12 @@ EOF
         ;;
     stop)
         echo -e "${C_ERROR}${E_STOP} Stopping Ollama server...${C_OFF}"
-        if pgrep -x "ollama" > /dev/null
-        then
+        if pgrep -x "ollama" > /dev/null; then
             pkill -x "ollama"
+            # Wait until the process is actually gone
+            while pgrep -x "ollama" > /dev/null; do
+                sleep 0.5
+            done
             echo -e "${C_SUCCESS}Ollama server stopped.${C_OFF}"
         else
             echo -e "${C_WARN}Ollama server is not running.${C_OFF}"

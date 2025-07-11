@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.4] - 2025-07-11
+
+### Fixed
+
+-   **Restart Reliability:** The `stop` command now waits until the Ollama server process has fully terminated before exiting. This resolves a race condition in the `restart` command that could cause a "address already in use" error.
+
 ## [1.7.3] - 2025-07-11
 
 ### Changed
