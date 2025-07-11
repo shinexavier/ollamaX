@@ -7,7 +7,7 @@
 DEFAULT_MODEL_BASE="qwen2.5-coder:7b"
 DEFAULT_CTX_SIZE_KB=4
 MODELFILE_PATH="./Modelfile"
-VERSION="1.7.2"
+VERSION="1.7.3"
 CONFIG_DIR="$HOME/.ollamaX"
 CONFIG_FILE="$CONFIG_DIR/config"
 
@@ -358,9 +358,15 @@ EOF
             ollama create "$MODEL_NAME" -f "$MODELFILE_PATH"
         fi
 
-        echo -e "${C_INFO}${E_START} Starting Ollama server...${C_OFF}"
-        # Always start the server in the background, logging to a file.
-        ollama serve > ollama-server.log 2>&1 &
+        # Check if server is already running
+        if pgrep -x "ollama" > /dev/null; then
+            echo -e "${C_INFO}${E_INFO} Ollama server is already running. Proceeding to warm up model...${C_OFF}"
+        else
+            echo -e "${C_INFO}${E_START} Starting Ollama server...${C_OFF}"
+            # Start the server in the background, logging to a file.
+            ollama serve > ollama-server.log 2>&1 &
+            sleep 2 # Give the server a moment to start
+        fi
 
         # If debug mode is enabled, tail the log file in a new terminal.
         # If debug mode is enabled, tail the log file in the background of the current terminal.
